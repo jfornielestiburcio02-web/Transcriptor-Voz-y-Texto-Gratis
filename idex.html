@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Texto en Canvas con Voz</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin-top: 10px;
+    }
+    select, button, input {
+      margin-right: 10px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Texto en lienzo + voz</h2>
+
+<input id="texto" type="text" placeholder="Escribe aquí..." size="40">
+
+<br><br>
+
+<label>Fuente:</label>
+<select id="fuente">
+  <option>Verdana</option>
+  <option>Arial</option>
+  <option>Times New Roman</option>
+  <option>Courier New</option>
+  <option>Georgia</option>
+  <option>Tahoma</option>
+</select>
+
+<label>Tamaño:</label>
+<select id="tamano">
+  <option value="30">30</option>
+  <option value="40" selected>40</option>
+  <option value="50">50</option>
+</select>
+
+<br><br>
+
+<label>Voz:</label>
+<select id="voz"></select>
+
+<br><br>
+
+<button onclick="dibujar()">Mostrar</button>
+<button onclick="hablar()">Reproducir</button>
+<button onclick="borrar()">Borrar</button>
+
+<canvas id="lienzo" width="700" height="200"></canvas>
+
+<script>
+  const canvas = document.getElementById("lienzo");
+  const ctx = canvas.getContext("2d");
+  const texto = document.getElementById("texto");
+  const fuente = document.getElementById("fuente");
+  const tamano = document.getElementById("tamano");
+  const vozSelect = document.getElementById("voz");
+
+  let voces = [];
+
+  function limpiarCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function dibujar() {
+    limpiarCanvas();
+    ctx.font = `${tamano.value}px ${fuente.value}`;
+    ctx.fillStyle = "black";
+    ctx.fillText(texto.value, 20, 120);
+  }
+
+  function cargarVoces() {
+    voces = speechSynthesis.getVoices();
+    vozSelect.innerHTML = "";
+    voces.forEach((voz, i) => {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = `${voz.name} (${voz.lang})`;
+      vozSelect.appendChild(option);
+    });
+  }
+
+  function hablar() {
+    if (!texto.value) return;
+
+    const msg = new SpeechSynthesisUtterance(texto.value);
+    msg.voice = voces[vozSelect.value];
+    msg.lang = msg.voice.lang;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(msg);
+  }
+
+  function borrar() {
+    texto.value = "";
+    limpiarCanvas();
+    speechSynthesis.cancel();
+  }
+
+  speechSynthesis.onvoiceschanged = cargarVoces;
+  cargarVoces();
+</script>
+
+</body>
+</html>
